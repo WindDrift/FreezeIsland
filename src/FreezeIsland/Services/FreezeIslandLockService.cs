@@ -23,9 +23,7 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
     private int _countdownRemaining;
     private LockState _state = LockState.Unlocked;
     private volatile bool _isLocked;
-    private volatile bool _lockKeyboard = true;
-    private volatile bool _lockMouse = true;
-    private volatile bool _allowMouseMovement = true;
+    private volatile InputLockPolicy _policy = InputLockPolicy.Default;
     private volatile HotkeyGesture? _hotkey;
     private UnlockReason _pendingLockReason = UnlockReason.Hotkey;
     private bool _started;
@@ -45,11 +43,7 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
 
     public bool IsLocked => _isLocked;
 
-    public bool LockMouse => _lockMouse;
-
-    public bool AllowMouseMovement => _allowMouseMovement;
-
-    public bool LockKeyboard => _lockKeyboard;
+    public InputLockPolicy Policy => _policy;
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
@@ -107,6 +101,25 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
     public void OnHotkeyPressed()
     {
         Toggle(UnlockReason.Hotkey);
+    }
+
+    /// <summary>
+    /// 捕获下一次真实键盘按键，用于设置页添加排除键。
+    /// </summary>
+    public Task<uint?> CaptureNextKeyAsync(TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        var hookThread = _hookThread;
+        if (hookThread == null || !hookThread.Available)
+        {
+            return Task.FromResult<uint?>(null);
+        }
+
+        return hookThread.CaptureNextKeyAsync(timeout, cancellationToken);
+    }
+
+    public void CancelKeyCapture()
+    {
+        _hookThread?.CancelCapture();
     }
 
     public void RequestLock(UnlockReason reason)
@@ -305,9 +318,7 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
             _hotkey = HotkeyParser.Default;
         }
 
-        _lockKeyboard = settings.LockKeyboard;
-        _lockMouse = settings.LockMouse;
-        _allowMouseMovement = settings.AllowMouseMovement;
+        _policy = InputLockPolicy.Create(settings);
         var text = _hotkey?.ToString() ?? "Ctrl+Alt+F";
         RunOnUi(() => _stateService.SetHotkey(text));
     }
@@ -373,6 +384,7 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
         }
 
         _settingsService.Changed -= OnSettingsChanged;
+        CancelKeyCapture();
         try
         {
             if (AppBase.Current != null)

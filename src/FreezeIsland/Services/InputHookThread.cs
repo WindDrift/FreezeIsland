@@ -51,6 +51,9 @@ public sealed class InputHookThread
     private bool _lwin;
     private bool _rwin;
     private bool _hotkeyDown;
+    private uint _suppressKeyUp;
+
+    private TaskCompletionSource<uint>? _captureTcs;
 
     public InputHookThread(FreezeIslandLockService service, ILogger logger)
     {
@@ -62,6 +65,7 @@ public sealed class InputHookThread
 
     public bool Start()
     {
+        CancelCapture();
         _thread = new Thread(ThreadProc)
         {
             IsBackground = true,
@@ -74,6 +78,8 @@ public sealed class InputHookThread
 
     public void Stop()
     {
+        CancelCapture();
+
         var thread = _thread;
         if (thread == null)
         {
@@ -91,6 +97,75 @@ public sealed class InputHookThread
         }
 
         _thread = null;
+    }
+
+    /// <summary>
+    /// 等待下一次真实键盘按键。返回 null 表示超时、取消或钩子不可用。
+    /// </summary>
+    public async Task<uint?> CaptureNextKeyAsync(TimeSpan timeout, CancellationToken cancellationToken)
+    {
+        var completion = new TaskCompletionSource<uint>(TaskCreationOptions.RunContinuationsAsynchronously);
+        if (Interlocked.CompareExchange(ref _captureTcs, completion, null) != null)
+        {
+            return null;
+        }
+
+        using var timeoutCts = new CancellationTokenSource(timeout);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(timeoutCts.Token, cancellationToken);
+        using var registration = linkedCts.Token.Register(() => CancelCapture(completion));
+
+        try
+        {
+            return await completion.Task.ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            return null;
+        }
+        finally
+        {
+            CancelCapture(completion);
+        }
+    }
+
+    public void CancelCapture() => CancelCapture(null);
+
+    private void CancelCapture(TaskCompletionSource<uint>? expected)
+    {
+        while (true)
+        {
+            var current = Volatile.Read(ref _captureTcs);
+            if (current == null || (expected != null && !ReferenceEquals(current, expected)))
+            {
+                return;
+            }
+
+            if (Interlocked.CompareExchange(ref _captureTcs, null, current) == current)
+            {
+                current.TrySetCanceled();
+                return;
+            }
+        }
+    }
+
+    private bool TryCompleteCapture(uint virtualKey)
+    {
+        var completion = Interlocked.Exchange(ref _captureTcs, null);
+        if (completion == null)
+        {
+            return false;
+        }
+
+        if (virtualKey == 0x1B)
+        {
+            completion.TrySetCanceled();
+        }
+        else
+        {
+            completion.TrySetResult(virtualKey);
+        }
+
+        return true;
     }
 
     private void ThreadProc()
@@ -126,6 +201,7 @@ public sealed class InputHookThread
         finally
         {
             UninstallHooks();
+            CancelCapture();
             _available = false;
             _logger.LogInformation("FreezeIsland 低级输入钩子已卸载");
         }
@@ -162,6 +238,19 @@ public sealed class InputHookThread
         var message = wParam.ToInt32();
         var isDown = message is WmKeyDown or WmSysKeyDown;
         var isUp = message is WmKeyUp or WmSysKeyUp;
+
+        if (isDown && TryCompleteCapture(info.vkCode))
+        {
+            _suppressKeyUp = info.vkCode;
+            return (IntPtr)1;
+        }
+
+        if (isUp && info.vkCode == _suppressKeyUp)
+        {
+            _suppressKeyUp = 0;
+            return (IntPtr)1;
+        }
+
         if (isDown || isUp)
         {
             UpdateModifierState(info.vkCode, isDown);
@@ -191,7 +280,7 @@ public sealed class InputHookThread
             }
         }
 
-        if (_service.IsLocked && _service.LockKeyboard)
+        if (_service.IsLocked && _service.Policy.ShouldBlockKey(info.vkCode, info.scanCode, info.flags))
         {
             // 锁定时吞掉键盘事件；修饰键状态由本线程独立跟踪，
             // 因此解锁热键仍然可用，且不会把修饰键状态遗留给前台程序。
@@ -214,12 +303,7 @@ public sealed class InputHookThread
             return CallNextHookEx(_mouseHook, nCode, wParam, lParam);
         }
 
-        if (!_service.IsLocked || !_service.LockMouse)
-        {
-            return CallNextHookEx(_mouseHook, nCode, wParam, lParam);
-        }
-
-        if (_service.AllowMouseMovement && wParam.ToInt32() == WmMouseMove)
+        if (!_service.IsLocked || !_service.Policy.ShouldBlockMouse(wParam.ToInt32()))
         {
             return CallNextHookEx(_mouseHook, nCode, wParam, lParam);
         }

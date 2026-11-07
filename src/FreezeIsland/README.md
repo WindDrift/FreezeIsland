@@ -5,7 +5,8 @@ FreezeIsland 是 ClassIsland 2.1 的键鼠锁定插件。
 ## 功能
 
 - 默认热键 `Ctrl + Alt + F`：按下后进入可配置倒计时，再锁定键盘与鼠标按键/滚轮；再次按下解锁。
-- 锁定范围：键盘、鼠标按键/滚轮；可允许鼠标指针继续移动。
+- 锁定范围：键盘与鼠标独立控制。键盘可细分字母区、数字区、符号区、功能键区（F1–F12）、数字小键盘区、编辑与方向键区、控制键区、修饰键区、媒体与系统键、其他按键；鼠标可细分左键、中键、右键、侧键、滚轮与指针移动。
+- 排除按键：锁定期间可放行指定的键盘按键（支持音量、媒体等特殊按键），在设置页点击“添加按键”后按键即可加入，支持逐个移除或清空。
 - 倒计时：0–10 秒可配置；倒计时期间再次按热键可取消。
 - 全屏提醒：倒计时开始、已锁定、已解锁均显示加粗文字与左侧警示图标，时长 1–10 秒可配置。
 - 主界面组件：“FreezeIsland 锁定状态”显示当前状态与解锁热键，可在组件设置中自定义显示内容、文案、图标与字号。
@@ -32,7 +33,10 @@ FreezeIsland 是 ClassIsland 2.1 的键鼠锁定插件。
 
 - 按 `Ctrl + Alt + F` 进入倒计时；倒计时结束后锁定。
 - 锁定后再次按 `Ctrl + Alt + F` 解锁。
-- 默认锁定键盘与鼠标按键/滚轮，但允许鼠标指针移动。
+- 默认锁定全部键盘分区与鼠标按键/滚轮，但允许鼠标指针移动。
+- 在设置页展开“锁定键盘”或“锁定鼠标”，可关闭不需要拦截的子分区；主开关关闭时对应子开关不生效。
+- 排除按键：打开设置页“排除按键”，点击“添加按键”后按下要放行的键，Esc 取消。排除键只放行该键本身；若要放行组合键，需要同时排除其修饰键。
+- 真正的 Fn 键由键盘固件直接处理，Windows 低级钩子无法捕获；F1–F12（FN 区）由“功能键区”控制。
 - 紧急恢复：按 `Ctrl + Alt + Del` 打开 Windows 安全选项，或打开任务管理器结束 ClassIsland 进程。安全桌面出现时插件也会自动解锁。
 
 ## 组件设置
@@ -61,11 +65,29 @@ FreezeIsland 是 ClassIsland 2.1 的键鼠锁定插件。
   "Hotkey": "Ctrl+Alt+F",
   "LockKeyboard": true,
   "LockMouse": true,
+  "LockKeyboardLetters": true,
+  "LockKeyboardNumberRow": true,
+  "LockKeyboardSymbols": true,
+  "LockKeyboardFunctionKeys": true,
+  "LockKeyboardNumpad": true,
+  "LockKeyboardNavigation": true,
+  "LockKeyboardControlKeys": true,
+  "LockKeyboardModifiers": true,
+  "LockKeyboardMediaKeys": true,
+  "LockKeyboardOther": true,
+  "LockMouseLeftButton": true,
+  "LockMouseMiddleButton": true,
+  "LockMouseRightButton": true,
+  "LockMouseSideButtons": true,
+  "LockMouseWheel": true,
   "AllowMouseMovement": true,
+  "ExcludedKeys": [],
   "CountdownSeconds": 5,
   "NotificationDurationSeconds": 3
 }
 ```
+
+`ExcludedKeys` 保存虚拟键码，建议通过设置页的“添加按键”维护。旧版只包含 `Hotkey`、`LockKeyboard`、`LockMouse`、`AllowMouseMovement`、`CountdownSeconds`、`NotificationDurationSeconds` 的配置会按原行为升级：锁定全部键盘、鼠标按键与滚轮，并保留原来的鼠标移动设置。
 
 ## 自动化
 

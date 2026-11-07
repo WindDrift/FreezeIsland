@@ -62,31 +62,144 @@
                 </StackPanel>
             </fa:SettingsExpander>
 
-            <fa:SettingsExpander IconSource="{ci:FluentIconSource &#xE72E;}"
-                                   Header="锁定范围"
-                                   Description="选择要锁定的输入设备。鼠标可选择仅锁按键/滚轮而保留指针移动。">
-                <fa:SettingsExpanderItem Content="锁定键盘"
-                                           Description="拦截键盘按键输入，解锁热键除外。"
-                                           IconSource="{ci:FluentIconSource &#xE765;}">
+            <fa:SettingsExpander IconSource="{ci:FluentIconSource &#xE765;}"
+                                   Header="锁定键盘"
+                                   Description="拦截键盘输入；解锁热键始终可用。展开后可细分要锁定的键区。">
+                <fa:SettingsExpander.Footer>
+                    <ToggleSwitch x:Name="LockKeyboardToggle" />
+                </fa:SettingsExpander.Footer>
+                <fa:SettingsExpanderItem Content="字母区"
+                                           Description="A–Z 字母键。">
                     <fa:SettingsExpanderItem.Footer>
-                        <ToggleSwitch x:Name="LockKeyboardToggle" />
+                        <ToggleSwitch x:Name="KeyboardLettersToggle" />
                     </fa:SettingsExpanderItem.Footer>
                 </fa:SettingsExpanderItem>
-                <fa:SettingsExpanderItem Content="锁定鼠标按键/滚轮"
-                                           Description="拦截鼠标左右键、滚轮与侧键。"
-                                           IconSource="{ci:FluentIconSource &#xE962;}">
+                <fa:SettingsExpanderItem Content="数字区"
+                                           Description="主键盘顶部的 1–0 数字行。">
                     <fa:SettingsExpanderItem.Footer>
-                        <ToggleSwitch x:Name="LockMouseToggle" />
+                        <ToggleSwitch x:Name="KeyboardNumberRowToggle" />
                     </fa:SettingsExpanderItem.Footer>
                 </fa:SettingsExpanderItem>
-                <fa:SettingsExpanderItem Content="允许鼠标指针移动"
-                                           Description="开启后，锁定期间仍可移动鼠标指针，但无法点击或滚动。"
-                                           IconSource="{ci:FluentIconSource &#xE7C9;}">
+                <fa:SettingsExpanderItem Content="符号区"
+                                           Description="主键盘上的标点与符号键，例如 ; = , . / [ ] \ '。">
                     <fa:SettingsExpanderItem.Footer>
-                        <ToggleSwitch x:Name="AllowMouseMovementToggle" />
+                        <ToggleSwitch x:Name="KeyboardSymbolsToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="功能键区"
+                                           Description="F1–F12 功能键（即 FN 区）。真正的 Fn 键由键盘固件处理，系统钩子无法单独拦截。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="KeyboardFunctionKeysToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="数字小键盘区"
+                                           Description="数字小键盘、NumLock 与小键盘运算符；NumLock 关闭时小键盘方向键也归入此区。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="KeyboardNumpadToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="编辑与方向键区"
+                                           Description="独立的方向键与 Insert、Delete、Home、End、PageUp、PageDown。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="KeyboardNavigationToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="控制键区"
+                                           Description="Esc、Tab、CapsLock、Backspace、Enter、空格。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="KeyboardControlKeysToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="修饰键区"
+                                           Description="Shift、Ctrl、Alt、Win。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="KeyboardModifiersToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="媒体与系统键"
+                                           Description="音量、播放控制、浏览器键、PrintScreen、Pause、ScrollLock 等。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="KeyboardMediaKeysToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="其他按键"
+                                           Description="未归类的按键（IME、厂商自定义键等）。建议保持开启以避免漏锁。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="KeyboardOtherToggle" />
                     </fa:SettingsExpanderItem.Footer>
                 </fa:SettingsExpanderItem>
             </fa:SettingsExpander>
+
+            <fa:SettingsExpander IconSource="{ci:FluentIconSource &#xE962;}"
+                                   Header="锁定鼠标"
+                                   Description="拦截鼠标按键与滚轮；可单独冻结指针。展开后可细分要锁定的操作。">
+                <fa:SettingsExpander.Footer>
+                    <ToggleSwitch x:Name="LockMouseToggle" />
+                </fa:SettingsExpander.Footer>
+                <fa:SettingsExpanderItem Content="左键"
+                                           Description="鼠标左键的按下、释放与双击。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="MouseLeftToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="中键"
+                                           Description="鼠标中键（滚轮按下）的按下、释放与双击。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="MouseMiddleToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="右键"
+                                           Description="鼠标右键的按下、释放与双击。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="MouseRightToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="侧键"
+                                           Description="鼠标 X1/X2 侧键。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="MouseSideButtonsToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="滚轮"
+                                           Description="垂直与水平滚动。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="MouseWheelToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="锁定鼠标移动"
+                                           Description="开启后鼠标指针将被冻结；关闭时仍可移动指针但不能执行所选操作。默认关闭。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="MouseMovementLockToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+            </fa:SettingsExpander>
+
+            <ci:IconText Glyph="&#xE711;" Text="排除按键" Margin="0 16 0 8" />
+
+            <Border Margin="0 0 0 8"
+                    Padding="16"
+                    CornerRadius="6"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="锁定期间仍然可用的键盘按键"
+                               FontWeight="Medium" />
+                    <TextBlock Text="解锁热键始终可用。点击“添加按键”后按下要排除的键；支持音量、媒体等特殊按键，Esc 取消。排除键只放行该键本身，组合键需要同时排除修饰键。Fn 键由键盘固件处理，无法被系统钩子捕获。"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <WrapPanel x:Name="ExcludedKeysPanel" />
+                    <TextBlock x:Name="NoExcludedKeysText"
+                               Text="尚未添加排除按键。"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="AddExcludedKeyButton" Content="添加按键" />
+                        <Button x:Name="ClearExcludedKeysButton" Content="清空" />
+                    </StackPanel>
+                    <TextBlock x:Name="ExcludeKeyStatusText"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               IsVisible="False"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
 
             <ci:IconText Glyph="&#xE916;" Text="时间与提醒" Margin="0 16 0 8" />
 
