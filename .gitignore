@@ -1,0 +1,9 @@
+_archive/
+bin/
+obj/
+.vs/
+.idea/
+*.user
+src/FreezeIsland/cipx/
+artifacts/
+TestResults/
