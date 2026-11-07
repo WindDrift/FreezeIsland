@@ -3,7 +3,6 @@ using ClassIsland.Core;
 using ClassIsland.Core.Abstractions.Services.NotificationProviders;
 using ClassIsland.Core.Attributes;
 using ClassIsland.Core.Models.Notification;
-using FreezeIsland.Controls;
 using FreezeIsland.Models;
 using Microsoft.Extensions.Logging;
 
@@ -28,7 +27,6 @@ public sealed class FreezeIslandNotificationProvider : NotificationProviderBase,
     private readonly FreezeIslandSettingsService _settings;
     private readonly ILogger<FreezeIslandNotificationProvider> _logger;
     private NotificationRequest? _countdownRequest;
-    private FreezeIslandNotificationView? _countdownView;
 
     public FreezeIslandNotificationProvider(
         FreezeIslandStateService state,
@@ -114,55 +112,42 @@ public sealed class FreezeIslandNotificationProvider : NotificationProviderBase,
     private void ShowCountdown(int countdownSeconds)
     {
         CancelCountdown();
-        var view = new FreezeIslandNotificationView(
-            NotificationVisualState.Countdown,
-            _state.HotkeyText,
-            countdownSeconds);
-        var content = new NotificationContent(view)
-        {
-            Duration = TimeSpan.FromSeconds(Math.Max(1, countdownSeconds)),
-            SpeechContent = "即将锁定键盘和鼠标"
-        };
+        var content = NotificationContent.CreateSimpleTextContent(
+            $"将在 {countdownSeconds} 秒后锁定键盘和鼠标，按 {_state.HotkeyText} 取消");
+        content.Duration = TimeSpan.FromSeconds(Math.Max(1, countdownSeconds));
+        content.SpeechContent = "即将锁定键盘和鼠标";
         var request = new NotificationRequest
         {
             MaskContent = content
         };
 
-        _countdownView = view;
         _countdownRequest = request;
         Show(request);
     }
 
     private void ShowLocked()
     {
-        var view = new FreezeIslandNotificationView(
-            NotificationVisualState.Locked,
-            _state.HotkeyText,
-            0);
+        var content = NotificationContent.CreateSimpleTextContent(
+            $"键盘鼠标已锁定，按 {_state.HotkeyText} 解锁");
+        content.Duration = TimeSpan.FromSeconds(_settings.GetSnapshot().NotificationDurationSeconds);
+        content.SpeechContent = "键盘鼠标已锁定";
         Show(new NotificationRequest
         {
-            MaskContent = new NotificationContent(view)
-            {
-                Duration = TimeSpan.FromSeconds(_settings.GetSnapshot().NotificationDurationSeconds),
-                SpeechContent = "键盘鼠标已锁定"
-            }
+            MaskContent = content
         });
     }
 
     private void ShowUnlocked(UnlockReason? reason)
     {
-        var view = new FreezeIslandNotificationView(
-            NotificationVisualState.Unlocked,
-            _state.HotkeyText,
-            0,
-            reason == UnlockReason.SecureDesktop ? "安全桌面" : null);
+        var text = reason == UnlockReason.SecureDesktop
+            ? "检测到 Windows 安全桌面，已自动解锁"
+            : "键盘鼠标已解锁，可以继续操作";
+        var content = NotificationContent.CreateSimpleTextContent(text);
+        content.Duration = TimeSpan.FromSeconds(_settings.GetSnapshot().NotificationDurationSeconds);
+        content.SpeechContent = "键盘鼠标已解锁";
         Show(new NotificationRequest
         {
-            MaskContent = new NotificationContent(view)
-            {
-                Duration = TimeSpan.FromSeconds(_settings.GetSnapshot().NotificationDurationSeconds),
-                SpeechContent = "键盘鼠标已解锁"
-            }
+            MaskContent = content
         });
     }
 
@@ -189,8 +174,6 @@ public sealed class FreezeIslandNotificationProvider : NotificationProviderBase,
             // 提醒可能已经被宿主取消。
         }
 
-        _countdownView?.DisposeTimer();
-        _countdownView = null;
         _countdownRequest = null;
     }
 }
