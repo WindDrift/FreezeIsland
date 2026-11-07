@@ -2,7 +2,9 @@ using Avalonia.Threading;
 using ClassIsland.Core;
 using ClassIsland.Core.Abstractions.Services.NotificationProviders;
 using ClassIsland.Core.Attributes;
+using ClassIsland.Core.Controls;
 using ClassIsland.Core.Models.Notification;
+using ClassIsland.Core.Models.Notification.Templates;
 using FreezeIsland.Models;
 using Microsoft.Extensions.Logging;
 
@@ -22,6 +24,9 @@ public sealed class FreezeIslandNotificationProvider : NotificationProviderBase,
 {
     public const string ProviderId = "6E2A1B9C-7D4F-4A3B-8C1D-2E5F6A7B8C9D";
     public const string ChannelId = "A1B2C3D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D";
+
+    // Lucide triangle-alert
+    private const string WarningIconGlyph = "\ue193";
 
     private readonly FreezeIslandStateService _state;
     private readonly FreezeIslandSettingsService _settings;
@@ -112,7 +117,7 @@ public sealed class FreezeIslandNotificationProvider : NotificationProviderBase,
     private void ShowCountdown(int countdownSeconds)
     {
         CancelCountdown();
-        var content = NotificationContent.CreateSimpleTextContent(
+        var content = CreateWarningContent(
             $"将在 {countdownSeconds} 秒后锁定键盘和鼠标，按 {_state.HotkeyText} 取消");
         content.Duration = TimeSpan.FromSeconds(Math.Max(1, countdownSeconds));
         content.SpeechContent = "即将锁定键盘和鼠标";
@@ -127,7 +132,7 @@ public sealed class FreezeIslandNotificationProvider : NotificationProviderBase,
 
     private void ShowLocked()
     {
-        var content = NotificationContent.CreateSimpleTextContent(
+        var content = CreateWarningContent(
             $"键盘鼠标已锁定，按 {_state.HotkeyText} 解锁");
         content.Duration = TimeSpan.FromSeconds(_settings.GetSnapshot().NotificationDurationSeconds);
         content.SpeechContent = "键盘鼠标已锁定";
@@ -142,13 +147,27 @@ public sealed class FreezeIslandNotificationProvider : NotificationProviderBase,
         var text = reason == UnlockReason.SecureDesktop
             ? "检测到 Windows 安全桌面，已自动解锁"
             : "键盘鼠标已解锁，可以继续操作";
-        var content = NotificationContent.CreateSimpleTextContent(text);
+        var content = CreateWarningContent(text);
         content.Duration = TimeSpan.FromSeconds(_settings.GetSnapshot().NotificationDurationSeconds);
         content.SpeechContent = "键盘鼠标已解锁";
         Show(new NotificationRequest
         {
             MaskContent = content
         });
+    }
+
+    private static NotificationContent CreateWarningContent(string text)
+    {
+        var content = NotificationContent.CreateTwoIconsMask(text, hasRightIcon: false);
+
+        // 宿主模板暂时不会根据 HasRightIcon 隐藏右侧图标，显式替换图标以只保留左侧警示图标。
+        if (content.Content is TwoIconsMaskTemplateData data)
+        {
+            data.LeftIconSource = new LucideIconSource(WarningIconGlyph);
+            data.RightIconSource = null;
+        }
+
+        return content;
     }
 
     private void Show(NotificationRequest request)
