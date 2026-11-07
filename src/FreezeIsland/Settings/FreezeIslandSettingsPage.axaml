@@ -1,0 +1,149 @@
+<local:FreezeIslandSettingsPage x:Class="FreezeIsland.Settings.FreezeIslandSettingsPage"
+                               xmlns="https://github.com/avaloniaui"
+                               xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                               xmlns:ci="http://classisland.tech/schemas/xaml/core"
+                               xmlns:fa="using:FluentAvalonia.UI.Controls"
+                               xmlns:controls="clr-namespace:FreezeIsland.Controls"
+                               xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                               xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                               xmlns:local="clr-namespace:FreezeIsland.Settings"
+                               mc:Ignorable="d"
+                               d:DesignHeight="600" d:DesignWidth="800"
+                               TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+                               Background="{DynamicResource MaterialDesignPaper}"
+                               FontFamily="{StaticResource HarmonyOsSans}"
+                               TextElement.FontWeight="Regular"
+                               TextElement.FontSize="14">
+    <ScrollViewer>
+        <StackPanel Classes="settings-container animated-intro">
+            <ci:IconText Glyph="&#xE72E;" Text="键鼠锁定" Margin="0 0 0 8" />
+
+            <Border Margin="0 0 0 8"
+                    Padding="16"
+                    CornerRadius="6"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                <Grid ColumnDefinitions="Auto,*">
+                    <Border Width="56"
+                            Height="56"
+                            CornerRadius="8"
+                            Background="{DynamicResource SubtleFillColorSecondaryBrush}">
+                        <ci:FluentIcon Glyph="&#xE72E;"
+                                       FontSize="28"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource AccentFillColorDefaultBrush}" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="14 0 0 0" VerticalAlignment="Center" Spacing="4">
+                        <TextBlock Text="FreezeIsland"
+                                   FontSize="16"
+                                   FontWeight="Medium" />
+                        <TextBlock Text="按全局热键锁定键盘与鼠标，再次按下解除。倒计时、锁定与解锁状态会通过全屏提醒和主界面组件呈现。"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   TextWrapping="Wrap" />
+                        <StackPanel Orientation="Horizontal" Spacing="6" Margin="0 6 0 0">
+                            <TextBlock Text="当前状态："
+                                       Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                            <TextBlock x:Name="StatusText"
+                                       Text="键鼠未锁定"
+                                       FontWeight="Medium" />
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <ci:IconText Glyph="&#xE713;" Text="热键与锁定范围" Margin="0 16 0 8" />
+
+            <fa:SettingsExpander IconSource="{ci:FluentIconSource &#xE765;}"
+                                   Header="全局热键"
+                                   Description="按下此组合键进入倒计时并锁定；倒计时期间再次按下可取消，锁定后再次按下解锁。">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <controls:HotkeyRecorder x:Name="HotkeyRecorderControl" />
+                    <Button x:Name="ResetHotkeyButton" Content="恢复默认" />
+                </StackPanel>
+            </fa:SettingsExpander>
+
+            <fa:SettingsExpander IconSource="{ci:FluentIconSource &#xE72E;}"
+                                   Header="锁定范围"
+                                   Description="选择要锁定的输入设备。鼠标可选择仅锁按键/滚轮而保留指针移动。">
+                <fa:SettingsExpanderItem Content="锁定键盘"
+                                           Description="拦截键盘按键输入，解锁热键除外。"
+                                           IconSource="{ci:FluentIconSource &#xE765;}">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="LockKeyboardToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="锁定鼠标按键/滚轮"
+                                           Description="拦截鼠标左右键、滚轮与侧键。"
+                                           IconSource="{ci:FluentIconSource &#xE962;}">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="LockMouseToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="允许鼠标指针移动"
+                                           Description="开启后，锁定期间仍可移动鼠标指针，但无法点击或滚动。"
+                                           IconSource="{ci:FluentIconSource &#xE7C9;}">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch x:Name="AllowMouseMovementToggle" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+            </fa:SettingsExpander>
+
+            <ci:IconText Glyph="&#xE916;" Text="时间与提醒" Margin="0 16 0 8" />
+
+            <fa:SettingsExpander IconSource="{ci:FluentIconSource &#xE916;}"
+                                   Header="锁定倒计时"
+                                   Description="按下热键后等待指定秒数再锁定。设为 0 可立即锁定。">
+                <fa:SettingsExpander.Footer>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <NumericUpDown x:Name="CountdownBox"
+                                       Minimum="0"
+                                       Maximum="10"
+                                       Increment="1"
+                                       FormatString="0"
+                                       Width="120" />
+                        <TextBlock Text="秒"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
+
+            <fa:SettingsExpander IconSource="{ci:FluentIconSource &#xEA8F;}"
+                                   Header="全屏提醒时长"
+                                   Description="锁定与解锁全屏提醒的显示时长。倒计时提示按倒计时秒数单独显示。">
+                <fa:SettingsExpander.Footer>
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <NumericUpDown x:Name="NotificationDurationBox"
+                                       Minimum="1"
+                                       Maximum="10"
+                                       Increment="1"
+                                       FormatString="0"
+                                       Width="120" />
+                        <TextBlock Text="秒"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
+                    </StackPanel>
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
+
+            <ci:IconText Glyph="&#xE946;" Text="状态与诊断" Margin="0 16 0 8" />
+
+            <Border Padding="16"
+                    CornerRadius="6"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="输入钩子"
+                               FontWeight="Medium" />
+                    <TextBlock x:Name="HookStatusText"
+                               Text="输入钩子：检查中…"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               TextWrapping="Wrap" />
+                    <TextBlock x:Name="ErrorText"
+                               Foreground="{DynamicResource SystemFillColorCriticalBrush}"
+                               IsVisible="False"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</local:FreezeIslandSettingsPage>

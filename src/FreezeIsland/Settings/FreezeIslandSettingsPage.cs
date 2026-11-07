@@ -1,12 +1,10 @@
-using Avalonia;
+using System.ComponentModel;
 using Avalonia.Controls;
-using Avalonia.Controls.Primitives;
-using Avalonia.Layout;
-using Avalonia.Media;
+using Avalonia.Interactivity;
 using ClassIsland.Core.Abstractions.Controls;
 using ClassIsland.Core.Attributes;
 using ClassIsland.Core.Enums.SettingsWindow;
-using FreezeIsland.Controls;
+using ClassIsland.Shared;
 using FreezeIsland.Models;
 using FreezeIsland.Services;
 
@@ -18,40 +16,20 @@ namespace FreezeIsland.Settings;
     "\uE72E",
     "\uE72E",
     SettingsPageCategory.External)]
-public sealed class FreezeIslandSettingsPage : SettingsPageBase
+public sealed partial class FreezeIslandSettingsPage : SettingsPageBase
 {
     private readonly FreezeIslandSettingsService _settingsService;
     private readonly FreezeIslandStateService _stateService;
-    private readonly HotkeyRecorder _hotkeyRecorder = new();
-    private readonly CheckBox _lockKeyboard = new() { Content = "锁定键盘" };
-    private readonly CheckBox _lockMouse = new() { Content = "锁定鼠标按键/滚轮" };
-    private readonly CheckBox _allowMouseMovement = new() { Content = "允许鼠标指针移动" };
-    private readonly NumericUpDown _countdown = new()
-    {
-        Minimum = 0,
-        Maximum = 10,
-        Increment = 1,
-        FormatString = "0",
-        Width = 120
-    };
-    private readonly NumericUpDown _notificationDuration = new()
-    {
-        Minimum = 1,
-        Maximum = 10,
-        Increment = 1,
-        FormatString = "0",
-        Width = 120
-    };
-    private readonly TextBlock _error = new()
-    {
-        Foreground = Brushes.IndianRed,
-        IsVisible = false
-    };
-    private readonly TextBlock _hookStatus = new()
-    {
-        Opacity = 0.8
-    };
     private bool _loading;
+    private bool _subscribed;
+
+    // 供 Avalonia XAML 运行时加载器/设计器使用；ClassIsland 实际通过 DI 构造函数创建。
+    public FreezeIslandSettingsPage()
+        : this(
+            IAppHost.GetService<FreezeIslandSettingsService>(),
+            IAppHost.GetService<FreezeIslandStateService>())
+    {
+    }
 
     public FreezeIslandSettingsPage(
         FreezeIslandSettingsService settingsService,
@@ -60,109 +38,77 @@ public sealed class FreezeIslandSettingsPage : SettingsPageBase
         _settingsService = settingsService;
         _stateService = stateService;
 
-        Content = BuildContent();
+        InitializeComponent();
         LoadFromSettings();
 
-        _hotkeyRecorder.GestureChanged += (_, _) => ApplySettingsFromControls();
-        _lockKeyboard.Click += (_, _) => ApplySettingsFromControls();
-        _lockMouse.Click += (_, _) => ApplySettingsFromControls();
-        _allowMouseMovement.Click += (_, _) => ApplySettingsFromControls();
-        _countdown.ValueChanged += (_, _) => ApplySettingsFromControls();
-        _notificationDuration.ValueChanged += (_, _) => ApplySettingsFromControls();
+        HotkeyRecorderControl.GestureChanged += (_, _) => ApplySettingsFromControls();
+        ResetHotkeyButton.Click += OnResetHotkeyClick;
+
+        LockKeyboardToggle.PropertyChanged += OnTogglePropertyChanged;
+        LockMouseToggle.PropertyChanged += OnTogglePropertyChanged;
+        AllowMouseMovementToggle.PropertyChanged += OnTogglePropertyChanged;
+
+        CountdownBox.ValueChanged += (_, _) => ApplySettingsFromControls();
+        NotificationDurationBox.ValueChanged += (_, _) => ApplySettingsFromControls();
+
+        Loaded += OnLoaded;
+        Unloaded += OnUnloaded;
     }
 
-    private Control BuildContent()
+    private void OnLoaded(object? sender, RoutedEventArgs e)
     {
-        var panel = new StackPanel
+        if (_subscribed)
         {
-            Spacing = 12,
-            Margin = new Thickness(24)
-        };
+            return;
+        }
 
-        panel.Children.Add(new TextBlock
-        {
-            Text = "FreezeIsland",
-            FontSize = 24,
-            FontWeight = FontWeight.Bold
-        });
+        _subscribed = true;
+        _stateService.StateChanged += OnStateChanged;
+        _stateService.PropertyChanged += OnStatePropertyChanged;
+        UpdateStatusText();
+        UpdateHookStatus();
+    }
 
-        panel.Children.Add(new TextBlock
+    private void OnUnloaded(object? sender, RoutedEventArgs e)
+    {
+        if (!_subscribed)
         {
-            Text = "使用全局热键锁定/解锁键盘与鼠标。默认热键为 Ctrl+Alt+F；按热键后先进入倒计时，再次按下可取消。",
-            TextWrapping = TextWrapping.Wrap,
-            Opacity = 0.8
-        });
+            return;
+        }
 
-        panel.Children.Add(Section("热键"));
-        var resetButton = new Button
+        _subscribed = false;
+        _stateService.StateChanged -= OnStateChanged;
+        _stateService.PropertyChanged -= OnStatePropertyChanged;
+    }
+
+    private void OnTogglePropertyChanged(object? sender, Avalonia.AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == ToggleSwitch.IsCheckedProperty)
         {
-            Content = "恢复默认",
-            Margin = new Thickness(8, 0, 0, 0)
-        };
-        resetButton.Click += (_, _) =>
-        {
-            _hotkeyRecorder.SetGesture(HotkeyParser.Default);
             ApplySettingsFromControls();
-        };
-        panel.Children.Add(new StackPanel
-        {
-            Orientation = Orientation.Horizontal,
-            Spacing = 8,
-            Children = { _hotkeyRecorder, resetButton }
-        });
-
-        panel.Children.Add(Section("锁定范围"));
-        panel.Children.Add(_lockKeyboard);
-        panel.Children.Add(_lockMouse);
-        panel.Children.Add(_allowMouseMovement);
-
-        panel.Children.Add(Section("倒计时"));
-        panel.Children.Add(Row("锁定前倒计时（0 表示立即锁定）", _countdown, "秒"));
-
-        panel.Children.Add(Section("提醒"));
-        panel.Children.Add(Row("锁定/解锁全屏提醒时长", _notificationDuration, "秒"));
-
-        panel.Children.Add(Section("状态"));
-        panel.Children.Add(_hookStatus);
-        panel.Children.Add(_error);
-
-        return new ScrollViewer
-        {
-            Content = panel,
-            VerticalScrollBarVisibility = ScrollBarVisibility.Auto
-        };
+        }
     }
 
-    private static TextBlock Section(string text) => new()
+    private void OnStateChanged(object? sender, LockStateChangedEventArgs e)
     {
-        Text = text,
-        FontSize = 18,
-        FontWeight = FontWeight.SemiBold,
-        Margin = new Thickness(0, 12, 0, 0)
-    };
+        UpdateStatusText();
+    }
 
-    private static Control Row(string label, Control control, string suffix)
+    private void OnStatePropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        return new StackPanel
+        if (e.PropertyName is nameof(FreezeIslandStateService.CountdownRemaining)
+            or nameof(FreezeIslandStateService.HotkeyText)
+            or nameof(FreezeIslandStateService.HookAvailable))
         {
-            Orientation = Orientation.Horizontal,
-            Spacing = 8,
-            Children =
-            {
-                new TextBlock
-                {
-                    Text = label,
-                    VerticalAlignment = VerticalAlignment.Center
-                },
-                control,
-                new TextBlock
-                {
-                    Text = suffix,
-                    VerticalAlignment = VerticalAlignment.Center,
-                    Opacity = 0.7
-                }
-            }
-        };
+            UpdateStatusText();
+            UpdateHookStatus();
+        }
+    }
+
+    private void OnResetHotkeyClick(object? sender, RoutedEventArgs e)
+    {
+        HotkeyRecorderControl.SetGesture(HotkeyParser.Default);
+        ApplySettingsFromControls();
     }
 
     private void LoadFromSettings()
@@ -171,24 +117,20 @@ public sealed class FreezeIslandSettingsPage : SettingsPageBase
         try
         {
             var settings = _settingsService.Settings;
-            if (HotkeyParser.TryParse(settings.Hotkey, out var gesture))
-            {
-                _hotkeyRecorder.SetGesture(gesture);
-            }
-            else
-            {
-                _hotkeyRecorder.SetGesture(HotkeyParser.Default);
-            }
+            HotkeyRecorderControl.SetGesture(
+                HotkeyParser.TryParse(settings.Hotkey, out var gesture)
+                    ? gesture
+                    : HotkeyParser.Default);
 
-            _lockKeyboard.IsChecked = settings.LockKeyboard;
-            _lockMouse.IsChecked = settings.LockMouse;
-            _allowMouseMovement.IsChecked = settings.AllowMouseMovement;
-            _allowMouseMovement.IsEnabled = settings.LockMouse;
-            _countdown.Value = settings.CountdownSeconds;
-            _notificationDuration.Value = settings.NotificationDurationSeconds;
-            _hookStatus.Text = _stateService.HookAvailable
-                ? "输入钩子：已就绪"
-                : "输入钩子：不可用（当前无法锁定输入）";
+            LockKeyboardToggle.IsChecked = settings.LockKeyboard;
+            LockMouseToggle.IsChecked = settings.LockMouse;
+            AllowMouseMovementToggle.IsChecked = settings.AllowMouseMovement;
+            AllowMouseMovementToggle.IsEnabled = settings.LockMouse;
+            CountdownBox.Value = settings.CountdownSeconds;
+            NotificationDurationBox.Value = settings.NotificationDurationSeconds;
+
+            UpdateStatusText();
+            UpdateHookStatus();
         }
         finally
         {
@@ -204,21 +146,21 @@ public sealed class FreezeIslandSettingsPage : SettingsPageBase
         }
 
         var invalid = false;
-        if (_lockKeyboard.IsChecked != true && _lockMouse.IsChecked != true)
+        if (LockKeyboardToggle.IsChecked != true && LockMouseToggle.IsChecked != true)
         {
             ShowError("至少需要选择键盘或鼠标之一。");
-            _lockKeyboard.IsChecked = true;
+            LockKeyboardToggle.IsChecked = true;
             invalid = true;
         }
 
         var settings = _settingsService.Settings;
-        settings.Hotkey = _hotkeyRecorder.Gesture?.ToString() ?? "Ctrl+Alt+F";
-        settings.LockKeyboard = _lockKeyboard.IsChecked == true;
-        settings.LockMouse = _lockMouse.IsChecked == true;
-        settings.AllowMouseMovement = _allowMouseMovement.IsChecked == true;
-        settings.CountdownSeconds = (int)(_countdown.Value ?? 5);
-        settings.NotificationDurationSeconds = (int)(_notificationDuration.Value ?? 3);
-        _allowMouseMovement.IsEnabled = settings.LockMouse;
+        settings.Hotkey = HotkeyRecorderControl.Gesture?.ToString() ?? "Ctrl+Alt+F";
+        settings.LockKeyboard = LockKeyboardToggle.IsChecked == true;
+        settings.LockMouse = LockMouseToggle.IsChecked == true;
+        settings.AllowMouseMovement = AllowMouseMovementToggle.IsChecked == true;
+        settings.CountdownSeconds = (int)(CountdownBox.Value ?? 5);
+        settings.NotificationDurationSeconds = (int)(NotificationDurationBox.Value ?? 3);
+        AllowMouseMovementToggle.IsEnabled = settings.LockMouse;
 
         if (!invalid)
         {
@@ -228,14 +170,31 @@ public sealed class FreezeIslandSettingsPage : SettingsPageBase
         _settingsService.Save();
     }
 
+    private void UpdateStatusText()
+    {
+        StatusText.Text = _stateService.State switch
+        {
+            LockState.Locked => $"键鼠已锁定 · {_stateService.HotkeyText} 解锁",
+            LockState.Countdown => $"即将锁定 · {_stateService.CountdownRemaining}s",
+            _ => "键鼠未锁定"
+        };
+    }
+
+    private void UpdateHookStatus()
+    {
+        HookStatusText.Text = _stateService.HookAvailable
+            ? "输入钩子：已就绪，可以锁定输入。"
+            : "输入钩子：不可用，当前无法锁定输入。";
+    }
+
     private void ShowError(string message)
     {
-        _error.Text = message;
-        _error.IsVisible = true;
+        ErrorText.Text = message;
+        ErrorText.IsVisible = true;
     }
 
     private void HideError()
     {
-        _error.IsVisible = false;
+        ErrorText.IsVisible = false;
     }
 }
