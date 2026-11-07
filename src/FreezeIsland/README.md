@@ -1,13 +1,13 @@
 # FreezeIsland
 
-FreezeIsland 是 ClassIsland 2.1 的键鼠锁定插件。它原生使用低级键盘/鼠标钩子，不依赖、不捆绑 `KeyFreeze_x64.exe`。
+FreezeIsland 是 ClassIsland 2.1 的键鼠锁定插件。
 
 ## 功能
 
 - 默认热键 `Ctrl + Alt + F`：按下后进入可配置倒计时，再锁定键盘与鼠标按键/滚轮；再次按下解锁。
 - 锁定范围：键盘、鼠标按键/滚轮；可允许鼠标指针继续移动。
 - 倒计时：0–10 秒可配置；倒计时期间再次按热键可取消。
-- 全屏提醒：倒计时开始、已锁定、已解锁均显示纯文字提示（无自定义样式），时长 1–10 秒可配置。
+- 全屏提醒：倒计时开始、已锁定、已解锁均显示纯文字提示，时长 1–10 秒可配置。
 - 主界面组件：“FreezeIsland 锁定状态”显示当前状态与解锁热键。
 - 自动化：
   - 行动：`锁定键鼠`、`解锁键鼠`、`切换键鼠锁定`；
@@ -23,12 +23,6 @@ FreezeIsland 是 ClassIsland 2.1 的键鼠锁定插件。它原生使用低级�
 
    ```text
    <ClassIsland 数据目录>\Cache\PluginPackages\FreezeIsland.cipx
-   ```
-
-   本机为：
-
-   ```text
-   D:\Software\ClassIsland\data\Cache\PluginPackages\FreezeIsland.cipx
    ```
 
 2. 重启 ClassIsland。应用会自动解压到 `<数据目录>\Plugins\winddrift.freezeisland`。
@@ -85,23 +79,3 @@ dotnet build src/FreezeIsland/FreezeIsland.csproj -c Release -p:GenerateHashSumm
 ```text
 src/FreezeIsland/cipx/FreezeIsland.cipx
 ```
-
-## 测试状态
-
-已在 ClassIsland 2.1.0.1 上验证：
-
-- 插件加载成功；
-- 低级输入钩子安装成功；
-- 倒计时 5 秒 → 锁定 → 3 秒后自动解锁；
-- 倒计时、锁定、解锁三类全屏提醒进入 ClassIsland 通知管线；
-- 主界面组件显示“键鼠未锁定”，组件库中可见；
-- 插件设置文件正常创建。
-
-实际物理按键锁定/解锁需要人工按一次热键确认。开发期的真实锁定测试使用环境变量 `FREEZEISLAND_SMOKE_TEST=1`，仅在显式设置时触发一次倒计时锁定并在 3 秒后自动解锁。
-
-## 已知限制
-
-- 安全桌面检测采用 250ms 轮询；Ctrl+Alt+Del 与 UAC 共用 Winlogon 桌面，因此 UAC 出现时也会解锁。
-- 低级钩子无法保证拦截所有系统级组合键；Ctrl+Alt+Del 始终由 Windows 处理。
-- 插件以 ClassIsland 的权限运行；若 ClassIsland 未提升，可能无法阻断发往更高完整性窗口的输入。
-- 倒计时/提醒期间切换主题或组件配置可能造成短暂的 UI 刷新，不影响输入状态机。
