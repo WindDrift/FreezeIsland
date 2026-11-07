@@ -29,7 +29,7 @@ public class Plugin : PluginBase
         services.AddHostedService(sp => sp.GetRequiredService<FreezeIslandLockService>());
 
         services.AddNotificationProvider<FreezeIslandNotificationProvider>();
-        services.AddComponent<FreezeIslandComponent>();
+        services.AddComponent<FreezeIslandComponent, FreezeIslandComponentSettingsControl>();
         services.AddSettingsPage<FreezeIslandSettingsPage>();
 
         services.AddAction<LockAction>();

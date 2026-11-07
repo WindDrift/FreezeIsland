@@ -1,0 +1,137 @@
+<controls:ComponentBase x:Class="FreezeIsland.Controls.FreezeIslandComponentSettingsControl"
+                        x:TypeArguments="models:FreezeIslandComponentSettings"
+                        xmlns="https://github.com/avaloniaui"
+                        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                        xmlns:ci="http://classisland.tech/schemas/xaml/core"
+                        xmlns:controls="clr-namespace:ClassIsland.Core.Abstractions.Controls;assembly=ClassIsland.Core"
+                        xmlns:fa="using:FluentAvalonia.UI.Controls"
+                        xmlns:local="clr-namespace:FreezeIsland.Controls"
+                        xmlns:models="clr-namespace:FreezeIsland.Models"
+                        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+                        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+                        mc:Ignorable="d"
+                        d:DesignHeight="600" d:DesignWidth="800">
+    <ScrollViewer DataContext="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=local:FreezeIslandComponentSettingsControl}}">
+        <StackPanel Classes="component-settings-container animated-intro">
+            <fa:SettingsExpander IconSource="{ci:FluentIconSource &#xE72E;}"
+                                 Header="显示内容"
+                                 Description="控制组件上显示哪些信息和元素。"
+                                 IsExpanded="True">
+                <fa:SettingsExpanderItem Content="显示图标"
+                                           Description="关闭后只显示文字。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Settings.ShowIcon, Mode=TwoWay}" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="显示文字"
+                                           Description="关闭后只显示图标。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Settings.ShowText, Mode=TwoWay}" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="显示解锁热键"
+                                           Description="关闭后，文案中的 {hotkey} 将替换为空。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Settings.ShowHotkey, Mode=TwoWay}" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="显示倒计时秒数"
+                                           Description="关闭后，文案中的 {seconds} 将替换为空。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Settings.ShowCountdownSeconds, Mode=TwoWay}" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="未锁定时隐藏组件"
+                                           Classes="has-radius"
+                                           Description="非编辑模式下，仅在倒计时或锁定期间显示。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ToggleSwitch IsChecked="{Binding Settings.HideWhenUnlocked, Mode=TwoWay}" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+            </fa:SettingsExpander>
+
+            <fa:SettingsExpander Margin="0 8 0 0"
+                                 IconSource="{ci:FluentIconSource &#xE8BD;}"
+                                 Header="状态文案"
+                                 Description="支持 {hotkey}、{seconds} 占位符；留空时只显示图标。"
+                                 IsExpanded="True">
+                <fa:SettingsExpanderItem Content="未锁定">
+                    <fa:SettingsExpanderItem.Footer>
+                        <TextBox Width="280"
+                                 Watermark="{x:Static models:FreezeIslandComponentSettings.DefaultUnlockedText}"
+                                 Text="{Binding Settings.UnlockedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="倒计时">
+                    <fa:SettingsExpanderItem.Footer>
+                        <TextBox Width="280"
+                                 Watermark="{x:Static models:FreezeIslandComponentSettings.DefaultCountdownText}"
+                                 Text="{Binding Settings.CountdownText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="已锁定" Classes="has-radius">
+                    <fa:SettingsExpanderItem.Footer>
+                        <TextBox Width="280"
+                                 Watermark="{x:Static models:FreezeIslandComponentSettings.DefaultLockedText}"
+                                 Text="{Binding Settings.LockedText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+            </fa:SettingsExpander>
+
+            <fa:SettingsExpander Margin="0 8 0 0"
+                                 IconSource="{ci:FluentIconSource &#xE92A;}"
+                                 Header="图标"
+                                 Description="仅在显示图标时生效。"
+                                 IsExpanded="True">
+                <fa:SettingsExpanderItem Content="图标大小">
+                    <fa:SettingsExpanderItem.Footer>
+                        <fa:NumberBox Width="120"
+                                      Minimum="12"
+                                      Maximum="48"
+                                      SmallChange="1"
+                                      SpinButtonPlacementMode="Inline"
+                                      Value="{Binding Settings.IconSize, Mode=TwoWay, Converter={x:Static ci:NotNaNConverter.Instance}}" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="已锁定颜色">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ColorPicker Color="{Binding Settings.LockedColor, Mode=TwoWay}" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="倒计时颜色">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ColorPicker Color="{Binding Settings.CountdownColor, Mode=TwoWay}" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+                <fa:SettingsExpanderItem Content="未锁定颜色" Classes="has-radius">
+                    <fa:SettingsExpanderItem.Footer>
+                        <ColorPicker Color="{Binding Settings.UnlockedColor, Mode=TwoWay}" />
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+            </fa:SettingsExpander>
+
+            <fa:SettingsExpander Margin="0 8 0 0"
+                                 IconSource="{ci:FluentIconSource &#xE8D2;}"
+                                 Header="文字"
+                                 Description="默认跟随 ClassIsland 高级设置中的正文字号。"
+                                 IsExpanded="True">
+                <fa:SettingsExpanderItem Content="自定义文字大小"
+                                           Classes="has-radius"
+                                           Description="开启后使用下方数值，关闭时跟随宿主字号。">
+                    <fa:SettingsExpanderItem.Footer>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <fa:NumberBox Width="120"
+                                          Minimum="12"
+                                          Maximum="40"
+                                          SmallChange="1"
+                                          SpinButtonPlacementMode="Inline"
+                                          IsVisible="{Binding Settings.UseCustomFontSize}"
+                                          Value="{Binding Settings.FontSize, Mode=TwoWay, Converter={x:Static ci:NotNaNConverter.Instance}}" />
+                            <ToggleSwitch IsChecked="{Binding Settings.UseCustomFontSize, Mode=TwoWay}" />
+                        </StackPanel>
+                    </fa:SettingsExpanderItem.Footer>
+                </fa:SettingsExpanderItem>
+            </fa:SettingsExpander>
+        </StackPanel>
+    </ScrollViewer>
+</controls:ComponentBase>
