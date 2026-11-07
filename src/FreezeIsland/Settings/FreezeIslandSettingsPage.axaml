@@ -64,7 +64,7 @@
 
             <fa:SettingsExpander IconSource="{ci:FluentIconSource &#xE765;}"
                                    Header="锁定键盘"
-                                   Description="拦截键盘输入；解锁热键始终可用。展开后可细分要锁定的键区。">
+                                   Description="拦截键盘输入；解锁热键始终可用。分区锁定属于实验性功能，需在页面底部开启【实验性功能】后才生效；关闭时锁定整个键盘。">
                 <fa:SettingsExpander.Footer>
                     <ToggleSwitch x:Name="LockKeyboardToggle" />
                 </fa:SettingsExpander.Footer>
@@ -183,7 +183,7 @@
                 <StackPanel Spacing="10">
                     <TextBlock Text="锁定期间仍然可用的键盘按键"
                                FontWeight="Medium" />
-                    <TextBlock Text="解锁热键始终可用。点击“添加按键”后按下要排除的键；支持音量、媒体等特殊按键，Esc 取消。排除键只放行该键本身，组合键需要同时排除修饰键。Fn 键由键盘固件处理，无法被系统钩子捕获。"
+                    <TextBlock Text="排除按键属于实验性功能，需在页面底部开启【实验性功能】后才生效；关闭时排除按键不生效。解锁热键始终可用。点击“添加按键”后按下要排除的键；支持音量、媒体等特殊按键，Esc 取消。排除键只放行该键本身，组合键需要同时排除修饰键。Fn 键由键盘固件处理，无法被系统钩子捕获。"
                                TextWrapping="Wrap"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}" />
                     <WrapPanel x:Name="ExcludedKeysPanel" />
@@ -257,6 +257,16 @@
                                TextWrapping="Wrap" />
                 </StackPanel>
             </Border>
+
+            <ci:IconText Glyph="&#xE7BA;" Text="实验性功能" Margin="0 16 0 8" />
+
+            <fa:SettingsExpander IconSource="{ci:FluentIconSource &#xE7BA;}"
+                                   Header="实验性功能"
+                                   Description="开启后启用分区锁定键盘与排除按键；关闭时锁定整个键盘，排除按键不生效。">
+                <fa:SettingsExpander.Footer>
+                    <ToggleSwitch x:Name="ExperimentalFeaturesToggle" />
+                </fa:SettingsExpander.Footer>
+            </fa:SettingsExpander>
         </StackPanel>
     </ScrollViewer>
 </local:FreezeIslandSettingsPage>

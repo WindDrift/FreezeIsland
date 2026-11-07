@@ -93,6 +93,7 @@ public sealed partial class FreezeIslandSettingsPage : SettingsPageBase
         LockKeyboardToggle.PropertyChanged += OnMasterPropertyChanged;
         LockMouseToggle.PropertyChanged += OnMasterPropertyChanged;
         MouseMovementLockToggle.PropertyChanged += OnMouseMovementPropertyChanged;
+        ExperimentalFeaturesToggle.PropertyChanged += OnExperimentalFeaturesChanged;
 
         HotkeyRecorderControl.GestureChanged += (_, _) => ApplySettingsFromControls();
         ResetHotkeyButton.Click += OnResetHotkeyClick;
@@ -239,6 +240,22 @@ public sealed partial class FreezeIslandSettingsPage : SettingsPageBase
         ApplySettingsFromControls();
     }
 
+    private void OnExperimentalFeaturesChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (_suppress || e.Property != ToggleSwitch.IsCheckedProperty)
+        {
+            return;
+        }
+
+        if (ExperimentalFeaturesToggle.IsChecked != true && _capturingKey)
+        {
+            CancelKeyCapture();
+        }
+
+        ApplySettingsFromControls();
+        RebuildExcludedKeys();
+    }
+
     private void OnStateChanged(object? sender, LockStateChangedEventArgs e)
     {
         if (e.NewState != LockState.Unlocked && _capturingKey)
@@ -290,6 +307,12 @@ public sealed partial class FreezeIslandSettingsPage : SettingsPageBase
         if (_capturingKey)
         {
             CancelKeyCapture();
+            return;
+        }
+
+        if (ExperimentalFeaturesToggle.IsChecked != true)
+        {
+            SetExcludeKeyStatus("请先在页面底部开启【实验性功能】。", isError: true);
             return;
         }
 
@@ -373,6 +396,7 @@ public sealed partial class FreezeIslandSettingsPage : SettingsPageBase
             }
 
             MouseMovementLockToggle.IsChecked = !settings.AllowMouseMovement;
+            ExperimentalFeaturesToggle.IsChecked = settings.EnableExperimentalFeatures;
             CountdownBox.Value = settings.CountdownSeconds;
             NotificationDurationBox.Value = settings.NotificationDurationSeconds;
 
@@ -401,6 +425,7 @@ public sealed partial class FreezeIslandSettingsPage : SettingsPageBase
         settings.KeyboardScope = ComputeKeyboardScope();
         settings.MouseScope = ComputeMouseScope();
         settings.AllowMouseMovement = MouseMovementLockToggle.IsChecked != true;
+        settings.EnableExperimentalFeatures = ExperimentalFeaturesToggle.IsChecked == true;
         settings.CountdownSeconds = (int)(CountdownBox.Value ?? 5);
         settings.NotificationDurationSeconds = (int)(NotificationDurationBox.Value ?? 3);
 
@@ -455,10 +480,11 @@ public sealed partial class FreezeIslandSettingsPage : SettingsPageBase
 
     private void UpdateScopeToggleAvailability()
     {
+        var experimentalOn = ExperimentalFeaturesToggle.IsChecked == true;
         var keyboardOn = LockKeyboardToggle.IsChecked == true;
         foreach (var item in _keyboardToggles)
         {
-            item.Toggle.IsEnabled = keyboardOn;
+            item.Toggle.IsEnabled = keyboardOn && experimentalOn;
         }
 
         var mouseOn = LockMouseToggle.IsChecked == true;
@@ -468,6 +494,10 @@ public sealed partial class FreezeIslandSettingsPage : SettingsPageBase
         }
 
         MouseMovementLockToggle.IsEnabled = mouseOn;
+        AddExcludedKeyButton.IsEnabled = experimentalOn;
+        ClearExcludedKeysButton.IsEnabled = experimentalOn
+                                            && (_settingsService.Settings.ExcludedKeys?.Count ?? 0) > 0
+                                            && !_capturingKey;
     }
 
     private void AddExcludedKey(uint virtualKey)
@@ -518,7 +548,10 @@ public sealed partial class FreezeIslandSettingsPage : SettingsPageBase
         }
 
         NoExcludedKeysText.IsVisible = excludedKeys.Count == 0;
-        ClearExcludedKeysButton.IsEnabled = excludedKeys.Count > 0 && !_capturingKey;
+        AddExcludedKeyButton.IsEnabled = ExperimentalFeaturesToggle.IsChecked == true;
+        ClearExcludedKeysButton.IsEnabled = ExperimentalFeaturesToggle.IsChecked == true
+                                            && excludedKeys.Count > 0
+                                            && !_capturingKey;
     }
 
     private Control CreateExcludedKeyChip(uint virtualKey)
@@ -539,7 +572,8 @@ public sealed partial class FreezeIslandSettingsPage : SettingsPageBase
             Background = Brushes.Transparent,
             BorderThickness = new Thickness(0),
             HorizontalContentAlignment = HorizontalAlignment.Center,
-            VerticalContentAlignment = VerticalAlignment.Center
+            VerticalContentAlignment = VerticalAlignment.Center,
+            IsEnabled = ExperimentalFeaturesToggle.IsChecked == true
         };
         ToolTip.SetTip(removeButton, "移除");
         removeButton.Click += (_, _) => RemoveExcludedKey(virtualKey);

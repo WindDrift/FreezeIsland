@@ -9,6 +9,7 @@ public sealed class InputLockPolicy
         true,
         true,
         true,
+        false,
         KeyboardLockScope.All,
         MouseLockScope.All,
         Array.Empty<int>());
@@ -19,6 +20,7 @@ public sealed class InputLockPolicy
         bool lockKeyboard,
         bool lockMouse,
         bool allowMouseMovement,
+        bool experimentalFeaturesEnabled,
         KeyboardLockScope keyboardScope,
         MouseLockScope mouseScope,
         int[] excludedKeys)
@@ -26,6 +28,7 @@ public sealed class InputLockPolicy
         LockKeyboard = lockKeyboard;
         LockMouse = lockMouse;
         AllowMouseMovement = allowMouseMovement;
+        ExperimentalFeaturesEnabled = experimentalFeaturesEnabled;
         KeyboardScope = keyboardScope;
         MouseScope = mouseScope;
         _excludedKeys = excludedKeys;
@@ -36,6 +39,8 @@ public sealed class InputLockPolicy
     public bool LockMouse { get; }
 
     public bool AllowMouseMovement { get; }
+
+    public bool ExperimentalFeaturesEnabled { get; }
 
     public KeyboardLockScope KeyboardScope { get; }
 
@@ -55,6 +60,7 @@ public sealed class InputLockPolicy
             settings.LockKeyboard,
             settings.LockMouse,
             settings.AllowMouseMovement,
+            settings.EnableExperimentalFeatures,
             settings.KeyboardScope,
             settings.MouseScope,
             excludedKeys);
@@ -62,7 +68,18 @@ public sealed class InputLockPolicy
 
     public bool ShouldBlockKey(uint virtualKey, uint scanCode, uint flags)
     {
-        if (!LockKeyboard || IsKeyExcluded(virtualKey))
+        if (!LockKeyboard)
+        {
+            return false;
+        }
+
+        // 未开启实验性功能时保持旧版行为：锁定整个键盘，排除按键不生效。
+        if (!ExperimentalFeaturesEnabled)
+        {
+            return true;
+        }
+
+        if (IsKeyExcluded(virtualKey))
         {
             return false;
         }

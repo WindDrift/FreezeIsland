@@ -114,6 +114,11 @@ public sealed class FreezeIslandSettings
     public bool AllowMouseMovement { get; set; } = true;
 
     /// <summary>
+    /// 开启后才启用键盘分区锁定与排除按键；关闭时锁定整个键盘且排除按键不生效。
+    /// </summary>
+    public bool EnableExperimentalFeatures { get; set; }
+
+    /// <summary>
     /// 锁定期间仍然放行的键盘虚拟键码。解锁热键始终放行，无需加入此列表。
     /// </summary>
     public List<int> ExcludedKeys { get; set; } = new();
@@ -130,6 +135,7 @@ public sealed class FreezeIslandSettings
         KeyboardScope = KeyboardScope,
         MouseScope = MouseScope,
         AllowMouseMovement = AllowMouseMovement,
+        EnableExperimentalFeatures = EnableExperimentalFeatures,
         ExcludedKeys = ExcludedKeys is null ? new List<int>() : new List<int>(ExcludedKeys),
         CountdownSeconds = CountdownSeconds,
         NotificationDurationSeconds = NotificationDurationSeconds
