@@ -191,9 +191,9 @@ public sealed class InputHookThread
             }
         }
 
-        if (_service.IsLocked)
+        if (_service.IsLocked && _service.LockKeyboard)
         {
-            // 锁定时吞掉所有键盘事件；修饰键状态由本线程独立跟踪，
+            // 锁定时吞掉键盘事件；修饰键状态由本线程独立跟踪，
             // 因此解锁热键仍然可用，且不会把修饰键状态遗留给前台程序。
             return (IntPtr)1;
         }

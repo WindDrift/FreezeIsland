@@ -1,3 +1,4 @@
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using FreezeIsland.Models;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,8 @@ public sealed class FreezeIslandSettingsService
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true,
-        PropertyNameCaseInsensitive = true
+        PropertyNameCaseInsensitive = true,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
     };
 
     private readonly ILogger<FreezeIslandSettingsService> _logger;

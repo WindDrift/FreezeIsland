@@ -203,10 +203,12 @@ public sealed class FreezeIslandSettingsPage : SettingsPageBase
             return;
         }
 
+        var invalid = false;
         if (_lockKeyboard.IsChecked != true && _lockMouse.IsChecked != true)
         {
             ShowError("至少需要选择键盘或鼠标之一。");
             _lockKeyboard.IsChecked = true;
+            invalid = true;
         }
 
         var settings = _settingsService.Settings;
@@ -218,7 +220,11 @@ public sealed class FreezeIslandSettingsPage : SettingsPageBase
         settings.NotificationDurationSeconds = (int)(_notificationDuration.Value ?? 3);
         _allowMouseMovement.IsEnabled = settings.LockMouse;
 
-        HideError();
+        if (!invalid)
+        {
+            HideError();
+        }
+
         _settingsService.Save();
     }
 

@@ -27,6 +27,7 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
     private volatile bool _lockMouse = true;
     private volatile bool _allowMouseMovement = true;
     private volatile HotkeyGesture? _hotkey;
+    private UnlockReason _pendingLockReason = UnlockReason.Hotkey;
     private bool _started;
     private bool _stopped;
 
@@ -124,6 +125,7 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
             }
 
             var countdown = _settingsService.GetSnapshot().CountdownSeconds;
+            _pendingLockReason = reason;
             if (countdown > 0)
             {
                 _state = LockState.Countdown;
@@ -231,7 +233,7 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
             _countdownRemaining--;
             if (_countdownRemaining <= 0)
             {
-                LockNowLocked(UnlockReason.Hotkey);
+                LockNowLocked(_pendingLockReason);
                 return;
             }
 
@@ -323,22 +325,12 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
 
     private void StartSmokeTest()
     {
-        _logger.LogWarning("FREEZEISLAND_SMOKE_TEST=1：3 秒后真实锁定 3 秒，然后自动解锁");
+        _logger.LogWarning("FREEZEISLAND_SMOKE_TEST=1：3 秒后按当前倒计时锁定，再等待 3 秒自动解锁");
         _ = Task.Run(async () =>
         {
             await Task.Delay(3000);
-            lock (_sync)
-            {
-                if (_state != LockState.Unlocked || !_stateService.HookAvailable)
-                {
-                    _logger.LogWarning("冒烟测试跳过：当前状态不允许锁定");
-                    return;
-                }
-
-                LockNowLocked(UnlockReason.SmokeTest);
-            }
-
-            await Task.Delay(3000);
+            RequestLock(UnlockReason.SmokeTest);
+            await Task.Delay(TimeSpan.FromSeconds(_settingsService.GetSnapshot().CountdownSeconds + 3));
             Unlock(UnlockReason.SmokeTest);
             _logger.LogInformation("FreezeIsland 冒烟测试完成");
         });

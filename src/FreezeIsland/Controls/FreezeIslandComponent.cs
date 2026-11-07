@@ -38,8 +38,7 @@ public sealed class FreezeIslandComponent : ComponentBase
         _text = new TextBlock
         {
             FontSize = 18,
-            VerticalAlignment = VerticalAlignment.Center,
-            Foreground = Brushes.White
+            VerticalAlignment = VerticalAlignment.Center
         };
 
         Content = new StackPanel
