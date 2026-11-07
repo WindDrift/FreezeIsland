@@ -1,0 +1,9 @@
+id: winddrift.freezeisland
+name: FreezeIsland
+description: 使用全局热键锁定/解锁键盘与鼠标，支持 ClassIsland 提醒、主界面组件与自动化。
+entranceAssembly: "FreezeIsland.dll"
+version: 1.0.0.0
+apiVersion: 2.1.0.1
+author: WindDrift
+icon: icon.png
+readme: README.md
