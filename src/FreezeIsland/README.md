@@ -67,7 +67,7 @@ FreezeIsland 是 ClassIsland 2.1 的键鼠锁定插件。
 
 ## 构建
 
-需要 .NET 8 SDK。本机没有 PowerShell 7，构建时跳过 MD5 摘要脚本：
+需要 .NET 8 SDK。
 
 ```powershell
 dotnet restore src/FreezeIsland/FreezeIsland.csproj
