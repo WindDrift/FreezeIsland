@@ -3,7 +3,6 @@ using Avalonia.Controls;
 using Avalonia.Layout;
 using Avalonia.Media;
 using Avalonia.Threading;
-using Path = Avalonia.Controls.Shapes.Path;
 
 namespace FreezeIsland.Controls;
 
@@ -68,67 +67,23 @@ public sealed class FreezeIslandNotificationView : UserControl
         };
 
         _subtitle.Text = statusText;
-        _subtitle.FontSize = 18;
-        _subtitle.Foreground = Brushes.White;
-        _subtitle.Opacity = 0.88;
         _subtitle.TextAlignment = TextAlignment.Center;
         _subtitle.TextWrapping = TextWrapping.Wrap;
-        _subtitle.Margin = new Thickness(0, 10, 0, 0);
-
-        var icon = new Path
-        {
-            Data = Geometry.Parse(_state == NotificationVisualState.Unlocked
-                ? LockVisuals.UnlockedPath
-                : LockVisuals.LockedPath),
-            Fill = _state switch
-            {
-                NotificationVisualState.Countdown => LockVisuals.CountdownBrush,
-                NotificationVisualState.Locked => LockVisuals.LockedBrush,
-                _ => LockVisuals.UnlockedBrush
-            },
-            Width = 24,
-            Height = 24,
-            Stretch = Stretch.Uniform
-        };
-
-        var iconBox = new Viewbox
-        {
-            Width = 96,
-            Height = 96,
-            Stretch = Stretch.Uniform,
-            Child = icon,
-            HorizontalAlignment = HorizontalAlignment.Center
-        };
+        _subtitle.Margin = new Thickness(0, 8, 0, 0);
 
         var titleBlock = new TextBlock
         {
             Text = title,
-            FontSize = 30,
-            FontWeight = FontWeight.Bold,
-            Foreground = Brushes.White,
             TextAlignment = TextAlignment.Center,
-            TextWrapping = TextWrapping.Wrap,
-            Margin = new Thickness(0, 18, 0, 0)
+            TextWrapping = TextWrapping.Wrap
         };
 
-        var panel = new StackPanel
+        return new StackPanel
         {
             Orientation = Orientation.Vertical,
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
-            Children = { iconBox, titleBlock, _subtitle }
-        };
-
-        return new Border
-        {
-            Background = new SolidColorBrush(Color.Parse("#E6101418")),
-            CornerRadius = new CornerRadius(20),
-            Padding = new Thickness(40, 32),
-            MinWidth = 420,
-            MaxWidth = 760,
-            HorizontalAlignment = HorizontalAlignment.Center,
-            VerticalAlignment = VerticalAlignment.Center,
-            Child = panel
+            Children = { titleBlock, _subtitle }
         };
     }
 
