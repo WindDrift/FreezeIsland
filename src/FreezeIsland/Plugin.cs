@@ -3,8 +3,10 @@ using ClassIsland.Core.Attributes;
 using ClassIsland.Core.Extensions.Registry;
 using FreezeIsland.Automation;
 using FreezeIsland.Automation.Actions;
+using FreezeIsland.Automation.Rules;
 using FreezeIsland.Automation.Triggers;
 using FreezeIsland.Controls;
+using FreezeIsland.Models.Rules;
 using FreezeIsland.Services;
 using FreezeIsland.Settings;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,6 +29,7 @@ public class Plugin : PluginBase
         services.AddSingleton<FreezeIslandStateService>();
         services.AddSingleton<FreezeIslandLockService>();
         services.AddHostedService(sp => sp.GetRequiredService<FreezeIslandLockService>());
+        services.AddHostedService<FreezeIslandRulesetNotifier>();
 
         services.AddNotificationProvider<FreezeIslandNotificationProvider>();
         services.AddComponent<FreezeIslandComponent, FreezeIslandComponentSettingsControl>();
@@ -36,5 +39,16 @@ public class Plugin : PluginBase
         services.AddAction<UnlockAction>();
         services.AddAction<ToggleAction>();
         services.AddTrigger<FreezeIslandLockStateTrigger, FreezeIslandTriggerSettingsControl>();
+
+        services.AddRule<FreezeIslandLockStateRuleSettings, FreezeIslandLockStateRuleSettingsControl>(
+            FreezeIslandRules.LockStateRuleId,
+            "键鼠锁定状态是",
+            "\uE72E",
+            FreezeIslandRules.HandleLockState);
+        services.AddRule<FreezeIslandLockScopeRuleSettings, FreezeIslandLockScopeRuleSettingsControl>(
+            FreezeIslandRules.LockScopeRuleId,
+            "锁定的范围包含",
+            "\uE72E",
+            FreezeIslandRules.HandleLockScope);
     }
 }

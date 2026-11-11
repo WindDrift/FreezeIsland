@@ -258,6 +258,29 @@
                 </StackPanel>
             </Border>
 
+            <ci:IconText Glyph="&#xEEF1;" Text="自动化规则" Margin="0 16 0 8" />
+
+            <Border Padding="16"
+                    CornerRadius="6"
+                    Background="{DynamicResource CardBackgroundFillColorDefaultBrush}">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="可供自动化工作流使用的规则"
+                               FontWeight="Medium" />
+                    <TextBlock Text="在【自动化】→ 编辑工作流的规则集时，可以选择以下规则作为条件："
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="· 键鼠锁定状态是：已锁定 / 已解锁。倒计时期间视为未锁定；输入钩子不可用时不会判定为已锁定。"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="· 锁定的范围包含：键盘 / 鼠标 / 鼠标移动 / 鼠标左键 / 中键 / 右键 / 侧键 / 滚轮。判定的是当前设置，未锁定时同样可以成立。"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Text="锁定状态或上述设置发生变化时，插件会通知 ClassIsland 重新判定规则集。"
+                               Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               TextWrapping="Wrap" />
+                </StackPanel>
+            </Border>
+
             <ci:IconText Glyph="&#xE7BA;" Text="实验性功能" Margin="0 16 0 8" />
 
             <fa:SettingsExpander IconSource="{ci:FluentIconSource &#xE7BA;}"
