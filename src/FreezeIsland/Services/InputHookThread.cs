@@ -7,7 +7,7 @@ namespace FreezeIsland.Services;
 /// <summary>
 /// 专用线程上的低级键盘/鼠标钩子。未锁定时全部放行；锁定时按范围吞掉输入。
 /// </summary>
-public sealed class InputHookThread
+public sealed class InputHookThread : IDisposable
 {
     private const int WhKeyboardLl = 13;
     private const int WhMouseLl = 14;
@@ -54,6 +54,7 @@ public sealed class InputHookThread
     private uint _suppressKeyUp;
 
     private TaskCompletionSource<uint>? _captureTcs;
+    private bool _disposed;
 
     public InputHookThread(FreezeIslandLockService service, ILogger logger)
     {
@@ -102,6 +103,18 @@ public sealed class InputHookThread
         }
 
         _thread = null;
+    }
+
+    public void Dispose()
+    {
+        if (_disposed)
+        {
+            return;
+        }
+
+        _disposed = true;
+        Stop();
+        _started.Dispose();
     }
 
     /// <summary>
