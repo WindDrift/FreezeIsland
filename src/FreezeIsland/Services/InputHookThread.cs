@@ -257,7 +257,13 @@ public sealed class InputHookThread : IDisposable
         var isDown = message is WmKeyDown or WmSysKeyDown;
         var isUp = message is WmKeyUp or WmSysKeyUp;
 
-        if (isDown && TryCompleteCapture(info.vkCode))
+        var hotkey = _service.CurrentHotkey;
+        var isHotkeyKey = hotkey != null
+                          && info.vkCode == hotkey.VirtualKey
+                          && ModifiersMatch(hotkey.Modifiers);
+
+        // 捕获期间仍需处理锁定热键，否则它会被记入排除按键，解锁热键也就不再始终可用。
+        if (isDown && !isHotkeyKey && TryCompleteCapture(info.vkCode))
         {
             _suppressKeyUp = info.vkCode;
             return (IntPtr)1;
@@ -274,10 +280,6 @@ public sealed class InputHookThread : IDisposable
             UpdateModifierState(info.vkCode, isDown);
         }
 
-        var hotkey = _service.CurrentHotkey;
-        var isHotkeyKey = hotkey != null
-                          && info.vkCode == hotkey.VirtualKey
-                          && ModifiersMatch(hotkey.Modifiers);
         if (isHotkeyKey)
         {
             if (isDown)
