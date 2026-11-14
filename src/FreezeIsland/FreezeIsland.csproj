@@ -7,7 +7,7 @@
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <CreateCipx>true</CreateCipx>
     <GenerateHashSummary>false</GenerateHashSummary>
-    <PowershellBinaryName>powershell</PowershellBinaryName>
+    <NoWarn>$(NoWarn);AVLN3001</NoWarn>
     <Configurations>Debug;Release</Configurations>
     <AssemblyName>FreezeIsland</AssemblyName>
     <RootNamespace>FreezeIsland</RootNamespace>

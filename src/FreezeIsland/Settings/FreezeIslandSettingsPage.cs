@@ -7,7 +7,6 @@ using Avalonia.Media;
 using ClassIsland.Core.Abstractions.Controls;
 using ClassIsland.Core.Attributes;
 using ClassIsland.Core.Enums.SettingsWindow;
-using ClassIsland.Shared;
 using FreezeIsland.Models;
 using FreezeIsland.Services;
 
@@ -34,15 +33,6 @@ public sealed partial class FreezeIslandSettingsPage : SettingsPageBase
     private bool _pageLoaded;
     private bool _capturingKey;
     private CancellationTokenSource? _captureCts;
-
-    // 供 Avalonia XAML 运行时加载器/设计器使用；ClassIsland 实际通过 DI 构造函数创建。
-    public FreezeIslandSettingsPage()
-        : this(
-            IAppHost.GetService<FreezeIslandSettingsService>(),
-            IAppHost.GetService<FreezeIslandStateService>(),
-            IAppHost.GetService<FreezeIslandLockService>())
-    {
-    }
 
     public FreezeIslandSettingsPage(
         FreezeIslandSettingsService settingsService,
