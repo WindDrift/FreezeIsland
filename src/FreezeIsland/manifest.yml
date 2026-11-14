@@ -7,3 +7,9 @@ apiVersion: 2.1.0.1
 author: WindDrift
 icon: icon.png
 readme: README.md
+url: https://github.com/WindDrift/FreezeIsland
+repoOwner: WindDrift
+repoName: FreezeIsland
+assetsRoot: master
+supportedOSPlatforms:
+  - Windows
