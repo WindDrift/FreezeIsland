@@ -1,9 +1,12 @@
+using System.Text.Json.Serialization;
+
 namespace FreezeIsland.Models;
 
 /// <summary>
 /// 键盘锁定的分区位掩码。
 /// </summary>
 [Flags]
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum KeyboardLockScope
 {
     None = 0,
@@ -24,6 +27,7 @@ public enum KeyboardLockScope
 /// 鼠标锁定的分区位掩码。指针移动由 <see cref="FreezeIslandSettings.AllowMouseMovement"/> 单独控制。
 /// </summary>
 [Flags]
+[JsonConverter(typeof(JsonStringEnumConverter))]
 public enum MouseLockScope
 {
     None = 0,
