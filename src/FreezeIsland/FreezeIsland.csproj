@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
     <EnableDynamicLoading>true</EnableDynamicLoading>
     <CreateCipx>true</CreateCipx>
-    <GenerateHashSummary>false</GenerateHashSummary>
     <NoWarn>$(NoWarn);AVLN3001</NoWarn>
     <Configurations>Debug;Release</Configurations>
     <AssemblyName>FreezeIsland</AssemblyName>
@@ -32,5 +31,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
+
+  <!-- 插件包不需要 MD5 汇总，生成脚本还依赖 PowerShell 7；SDK 的默认值会覆盖项目属性，因此在执行期关闭。 -->
+  <Target Name="DisableHashSummary" BeforeTargets="CreateCipx">
+    <PropertyGroup>
+      <GenerateHashSummary>false</GenerateHashSummary>
+    </PropertyGroup>
+  </Target>
 
 </Project>
