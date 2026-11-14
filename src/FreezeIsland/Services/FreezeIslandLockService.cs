@@ -383,12 +383,22 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
             }
             else
             {
-                Dispatcher.UIThread.Post(action);
+                Dispatcher.UIThread.Post(() =>
+                {
+                    try
+                    {
+                        action();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "在 UI 线程更新 FreezeIsland 状态失败");
+                    }
+                });
             }
         }
         catch (Exception ex)
         {
-            _logger.LogDebug(ex, "切换 FreezeIsland 状态到 UI 线程失败");
+            _logger.LogWarning(ex, "投递 FreezeIsland 状态更新失败");
         }
     }
 
