@@ -184,14 +184,14 @@ public sealed class FreezeIslandComponent : ComponentBase<FreezeIslandComponentS
             && !settings.ShowHotkey
             && template == FreezeIslandComponentSettings.DefaultLockedText)
         {
-            return "键鼠已锁定";
+            return FreezeIslandComponentSettings.LockedStateLabel;
         }
 
         if (state == LockState.Countdown
             && !settings.ShowCountdownSeconds
             && template == FreezeIslandComponentSettings.DefaultCountdownText)
         {
-            return "即将锁定";
+            return FreezeIslandComponentSettings.CountdownStateLabel;
         }
 
         var text = template;

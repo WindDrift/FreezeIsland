@@ -8,9 +8,11 @@ namespace FreezeIsland.Models;
 /// </summary>
 public partial class FreezeIslandComponentSettings : ObservableObject
 {
+    public const string LockedStateLabel = "键鼠已锁定";
+    public const string CountdownStateLabel = "即将锁定";
     public const string DefaultUnlockedText = "键鼠未锁定";
-    public const string DefaultCountdownText = "即将锁定 {seconds}s";
-    public const string DefaultLockedText = "键鼠已锁定 · {hotkey} 解锁";
+    public const string DefaultCountdownText = CountdownStateLabel + " {seconds}s";
+    public const string DefaultLockedText = LockedStateLabel + " · {hotkey} 解锁";
 
     [ObservableProperty] private bool _showIcon = true;
 

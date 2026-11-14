@@ -608,9 +608,10 @@ public sealed partial class FreezeIslandSettingsPage : SettingsPageBase
     {
         StatusText.Text = _stateService.State switch
         {
-            LockState.Locked => $"键鼠已锁定 · {_stateService.HotkeyText} 解锁",
-            LockState.Countdown => $"即将锁定 · {_stateService.CountdownRemaining}s",
-            _ => "键鼠未锁定"
+            LockState.Locked => $"{FreezeIslandComponentSettings.LockedStateLabel} · {_stateService.HotkeyText} 解锁",
+            LockState.Countdown =>
+                $"{FreezeIslandComponentSettings.CountdownStateLabel} · {_stateService.CountdownRemaining}s",
+            _ => FreezeIslandComponentSettings.DefaultUnlockedText
         };
     }
 
