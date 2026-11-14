@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: 构建插件包
+    runs-on: windows-latest
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: 构建插件包
+        run: dotnet build src/FreezeIsland/FreezeIsland.csproj -c Release
+
+      - name: 上传插件包
+        uses: actions/upload-artifact@v4
+        with:
+          name: FreezeIsland.cipx
+          path: src/FreezeIsland/cipx/FreezeIsland.cipx
+          if-no-files-found: error

@@ -1,0 +1,58 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: 构建并发布
+    runs-on: windows-latest
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 安装 .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: 校验标签与清单版本
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}".TrimStart("v")
+          $match = Select-String -Path src/FreezeIsland/manifest.yml -Pattern "^version:\s*(\S+)$" | Select-Object -First 1
+          $version = $match.Matches[0].Groups[1].Value.Trim()
+          if ($tag -ne $version) {
+            throw "标签版本 $tag 与 manifest.yml 中的 $version 不一致"
+          }
+
+      - name: 构建插件包
+        run: dotnet build src/FreezeIsland/FreezeIsland.csproj -c Release
+
+      - name: 暂存产物
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          Copy-Item src/FreezeIsland/cipx/FreezeIsland.cipx artifacts/
+
+      - name: 上传插件包
+        uses: actions/upload-artifact@v4
+        with:
+          name: FreezeIsland.cipx
+          path: artifacts/FreezeIsland.cipx
+          if-no-files-found: error
+
+      - name: 创建 Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" artifacts/FreezeIsland.cipx --title "FreezeIsland ${{ github.ref_name }}" --verify-tag --generate-notes
