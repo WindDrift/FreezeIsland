@@ -72,7 +72,12 @@ public sealed class InputHookThread
             Name = "FreezeIsland.InputHook"
         };
         _thread.Start();
-        _started.Wait(TimeSpan.FromSeconds(5));
+        if (!_started.Wait(TimeSpan.FromSeconds(5)))
+        {
+            _logger.LogWarning("FreezeIsland 输入钩子线程未在 5 秒内完成初始化");
+            return false;
+        }
+
         return _available;
     }
 
