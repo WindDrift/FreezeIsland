@@ -11,6 +11,8 @@ namespace FreezeIsland.Services;
 /// </summary>
 public sealed class FreezeIslandLockService : IHostedService, IDisposable
 {
+    private const int SecureDesktopPollMilliseconds = 500;
+
     private readonly FreezeIslandSettingsService _settingsService;
     private readonly FreezeIslandStateService _stateService;
     private readonly ILogger<FreezeIslandLockService> _logger;
@@ -290,7 +292,11 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
             return;
         }
 
-        _secureDesktopTimer = new Timer(SecureDesktopTick, null, 250, 250);
+        _secureDesktopTimer = new Timer(
+            SecureDesktopTick,
+            null,
+            SecureDesktopPollMilliseconds,
+            SecureDesktopPollMilliseconds);
     }
 
     private void StopSecureDesktopWatcher()
