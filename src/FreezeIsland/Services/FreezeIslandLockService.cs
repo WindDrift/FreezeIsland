@@ -30,7 +30,7 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
     private volatile HotkeyGesture? _hotkey;
     private UnlockReason _pendingLockReason = UnlockReason.Hotkey;
     private bool _started;
-    private bool _stopped;
+    private volatile bool _stopped;
 
     public FreezeIslandLockService(
         FreezeIslandSettingsService settingsService,
@@ -102,6 +102,11 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
 
     private bool EnsureHookAvailable()
     {
+        if (_stopped)
+        {
+            return false;
+        }
+
         if (IsHookAvailable)
         {
             return true;
