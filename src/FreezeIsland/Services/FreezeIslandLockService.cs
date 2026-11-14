@@ -16,6 +16,7 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
     private readonly ILogger<FreezeIslandLockService> _logger;
     private readonly object _sync = new();
     private readonly object _stopSync = new();
+    private readonly object _hookSync = new();
 
     private InputHookThread? _hookThread;
     private Timer? _countdownTimer;
@@ -56,10 +57,7 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
         ApplySettings();
         _settingsService.Changed += OnSettingsChanged;
 
-        _hookThread = new InputHookThread(this, _logger);
-        var available = _hookThread.Start();
-        RunOnUi(() => _stateService.SetHookAvailable(available));
-        if (!available)
+        if (!EnsureHookAvailable())
         {
             _logger.LogError("FreezeIsland 输入钩子不可用，锁定功能将被拒绝，直到钩子安装成功");
         }
@@ -98,6 +96,39 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
         Toggle(UnlockReason.Hotkey);
     }
 
+    private bool IsHookAvailable => _hookThread is { Available: true };
+
+    private bool EnsureHookAvailable()
+    {
+        if (IsHookAvailable)
+        {
+            return true;
+        }
+
+        lock (_hookSync)
+        {
+            if (IsHookAvailable)
+            {
+                return true;
+            }
+
+            _hookThread?.Dispose();
+            _hookThread = null;
+
+            var hookThread = new InputHookThread(this, _logger);
+            if (!hookThread.Start())
+            {
+                hookThread.Dispose();
+                RunOnUi(() => _stateService.SetHookAvailable(false));
+                return false;
+            }
+
+            _hookThread = hookThread;
+            RunOnUi(() => _stateService.SetHookAvailable(true));
+            return true;
+        }
+    }
+
     /// <summary>
     /// 捕获下一次真实键盘按键，用于设置页添加排除键。
     /// </summary>
@@ -119,6 +150,8 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
 
     public void RequestLock(UnlockReason reason)
     {
+        EnsureHookAvailable();
+
         lock (_sync)
         {
             if (_state != LockState.Unlocked)
@@ -126,7 +159,7 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
                 return;
             }
 
-            if (!_stateService.HookAvailable)
+            if (!IsHookAvailable)
             {
                 _logger.LogWarning("输入钩子不可用，已拒绝锁定请求");
                 return;
@@ -214,7 +247,7 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
             return;
         }
 
-        if (!_stateService.HookAvailable)
+        if (!IsHookAvailable)
         {
             _logger.LogWarning("输入钩子不可用，已拒绝锁定请求");
             return;
@@ -390,7 +423,7 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
 
         try
         {
-            _hookThread?.Stop();
+            _hookThread?.Dispose();
         }
         catch (Exception ex)
         {
