@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 namespace FreezeIsland.Services;
 
 /// <summary>
-/// 读写插件设置（PluginConfigFolder/settings.json）。
+/// 读写插件配置目录中的 settings.json。
 /// </summary>
 public sealed class FreezeIslandSettingsService
 {

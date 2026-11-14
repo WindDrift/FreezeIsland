@@ -81,7 +81,7 @@
                     </fa:SettingsExpanderItem.Footer>
                 </fa:SettingsExpanderItem>
                 <fa:SettingsExpanderItem Content="符号区"
-                                           Description="主键盘上的标点与符号键，例如 ; = , . / [ ] \ '。">
+                                           Description="主键盘上的标点与符号键。">
                     <fa:SettingsExpanderItem.Footer>
                         <ToggleSwitch x:Name="KeyboardSymbolsToggle" />
                     </fa:SettingsExpanderItem.Footer>

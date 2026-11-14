@@ -15,7 +15,7 @@ namespace FreezeIsland.Services;
 public sealed class FreezeIslandRulesetNotifier : IHostedService, IDisposable
 {
     /// <summary>
-    /// 单次通知最多连续判定的轮数。规则集判定可能反过来改变锁定状态（例如工作流里的锁定行动），
+    /// 单次通知最多连续判定的轮数。规则集判定可能反过来改变锁定状态，
     /// 因此允许有限次重判，同时避免规则配置成环时卡住 UI 线程。
     /// </summary>
     private const int MaxDrainRounds = 8;
