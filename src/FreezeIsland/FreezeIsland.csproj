@@ -16,6 +16,10 @@
     <ClassIslandPluginSdkVersion>2.1.0.1</ClassIslandPluginSdkVersion>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="ClassIsland.PluginSdk" Version="$(ClassIslandPluginSdkVersion)">
       <ExcludeAssets>runtime; native</ExcludeAssets>
