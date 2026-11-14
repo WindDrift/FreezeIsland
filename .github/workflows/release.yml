@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - "v*"
+      - "[0-9]*"
   workflow_dispatch:
     inputs:
       tag:
@@ -35,27 +35,32 @@ jobs:
       - name: 校验标签与清单版本
         shell: pwsh
         run: |
-          $tag = "${{ github.event.inputs.tag || github.ref_name }}".TrimStart("v")
+          $tag = "${{ github.event.inputs.tag || github.ref_name }}"
           $match = Select-String -Path src/FreezeIsland/manifest.yml -Pattern "^version:\s*(\S+)$" | Select-Object -First 1
           $version = $match.Matches[0].Groups[1].Value.Trim()
           if ($tag -ne $version) {
-            throw "标签版本 $tag 与 manifest.yml 中的 $version 不一致"
+            throw "标签 $tag 与 manifest.yml 中的 $version 不一致"
           }
 
       - name: 构建插件包
-        run: dotnet build src/FreezeIsland/FreezeIsland.csproj -c Release
+        run: dotnet build src/FreezeIsland/FreezeIsland.csproj -c Release -p:ForceHashSummary=true
 
       - name: 暂存产物
         shell: pwsh
         run: |
           New-Item -ItemType Directory -Force artifacts | Out-Null
           Copy-Item src/FreezeIsland/cipx/FreezeIsland.cipx artifacts/
+          Copy-Item src/FreezeIsland/cipx/checksums.md artifacts/
+          Copy-Item src/FreezeIsland/cipx/checksums.md artifacts/release-notes.md
+          Add-Content artifacts/release-notes.md -Value "安装说明见仓库根目录的 README。" -Encoding utf8
 
       - name: 上传插件包
         uses: actions/upload-artifact@v4
         with:
           name: FreezeIsland.cipx
-          path: artifacts/FreezeIsland.cipx
+          path: |
+            artifacts/FreezeIsland.cipx
+            artifacts/checksums.md
           if-no-files-found: error
 
       - name: 创建 Release
@@ -63,4 +68,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release create "${{ github.event.inputs.tag || github.ref_name }}" artifacts/FreezeIsland.cipx --title "FreezeIsland ${{ github.event.inputs.tag || github.ref_name }}" --verify-tag --generate-notes
+          gh release create "${{ github.event.inputs.tag || github.ref_name }}" artifacts/FreezeIsland.cipx artifacts/checksums.md --title "FreezeIsland ${{ github.event.inputs.tag || github.ref_name }}" --notes-file artifacts/release-notes.md --verify-tag

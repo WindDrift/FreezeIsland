@@ -36,8 +36,8 @@
     </None>
   </ItemGroup>
 
-  <!-- 插件包不需要 MD5 汇总，生成脚本还依赖 PowerShell 7；SDK 的默认值会覆盖项目属性，因此在执行期关闭。 -->
-  <Target Name="DisableHashSummary" BeforeTargets="CreateCipx">
+  <!-- 插件包默认不生成 MD5 汇总，生成脚本依赖 PowerShell 7；发布工作流用 -p:ForceHashSummary=true 打开。 -->
+  <Target Name="DisableHashSummary" BeforeTargets="CreateCipx" Condition="'$(ForceHashSummary)' != 'true'">
     <PropertyGroup>
       <GenerateHashSummary>false</GenerateHashSummary>
     </PropertyGroup>
