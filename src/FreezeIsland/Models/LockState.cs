@@ -14,8 +14,7 @@ public enum UnlockReason
     Automation,
     AutomationRevert,
     SecureDesktop,
-    Shutdown,
-    SmokeTest
+    Shutdown
 }
 
 public sealed class LockStateChangedEventArgs : EventArgs

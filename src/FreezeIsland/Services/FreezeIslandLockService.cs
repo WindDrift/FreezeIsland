@@ -79,11 +79,6 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
         UpdateState(LockState.Unlocked, 0, null);
         _logger.LogInformation("FreezeIsland 已启动，热键 {Hotkey}", _hotkey);
 
-        if (Environment.GetEnvironmentVariable("FREEZEISLAND_SMOKE_TEST") == "1")
-        {
-            StartSmokeTest();
-        }
-
         await Task.CompletedTask;
     }
 
@@ -332,19 +327,6 @@ public sealed class FreezeIslandLockService : IHostedService, IDisposable
     private void OnAppStopping(object? sender, EventArgs e)
     {
         Unlock(UnlockReason.Shutdown);
-    }
-
-    private void StartSmokeTest()
-    {
-        _logger.LogWarning("FREEZEISLAND_SMOKE_TEST=1：3 秒后按当前倒计时锁定，再等待 3 秒自动解锁");
-        _ = Task.Run(async () =>
-        {
-            await Task.Delay(3000);
-            RequestLock(UnlockReason.SmokeTest);
-            await Task.Delay(TimeSpan.FromSeconds(_settingsService.GetSnapshot().CountdownSeconds + 3));
-            Unlock(UnlockReason.SmokeTest);
-            _logger.LogInformation("FreezeIsland 冒烟测试完成");
-        });
     }
 
     private void UpdateState(LockState state, int countdownSeconds, UnlockReason? reason)
